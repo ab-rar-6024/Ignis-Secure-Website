@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://ignis-secure.vercel.app/sitemap.xml
+Sitemap: https://ignis-secura.vercel.app/sitemap.xml
