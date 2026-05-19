@@ -57,23 +57,22 @@ const Navbar: React.FC<NavbarProps> = ({ onPreOrderClick, onAuthClick, onDashboa
   const backgroundColor = useTransform(scrollY, [0, 100], ['rgba(0,0,0,0)', 'rgba(0,0,0,0.95)']);
   const backdropBlur = useTransform(scrollY, [0, 100], ['blur(0px)', 'blur(16px)']);
 
-  // Smooth scroll handler
   const handleScrollTo = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setIsMenuOpen(false);
     }
   };
 
   return (
     <motion.nav 
-      style={{ backgroundColor, backdropFilter: backdropBlur }}
-      className="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-4 md:px-12 md:py-5 border-b border-white/5 text-white transition-all"
+      style={{ backgroundColor, backdropFilter: backdropBlur, willChange: 'background-color, backdrop-filter' }}
+      className="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-4 md:px-12 md:py-5 border-b border-white/5 text-white transition-all transform-gpu"
     >
       <div className="flex items-center gap-2 cursor-pointer" onClick={handleScrollTo('hero')}>
-        <img src={logoImage} alt="Ignis Secura" className="h-10 md:h-12 object-contain drop-shadow-lg" />
+        <img src={logoImage} alt="Ignis Secura" className="h-10 md:h-12 object-contain drop-shadow-lg" fetchPriority="high" decoding="async" />
         <span className="font-bold text-xl bg-gradient-to-r from-white to-orange-300 bg-clip-text text-transparent hidden sm:inline-block">Ignis Secura</span>
       </div>
       
@@ -92,14 +91,14 @@ const Navbar: React.FC<NavbarProps> = ({ onPreOrderClick, onAuthClick, onDashboa
           <>
             <button
               onClick={onDashboardClick}
-              className="hidden md:flex items-center gap-2 bg-white/10 hover:bg-white/20 px-5 py-2 rounded-full transition-all"
+              className="hidden md:flex items-center gap-2 bg-white/10 hover:bg-white/20 px-5 py-2 rounded-full transition-all transform-gpu"
             >
               <UserIcon className="w-4 h-4" />
               <span className="text-sm">{user?.name}</span>
             </button>
             <button 
               onClick={onPreOrderClick}
-              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white px-6 py-2 rounded-full font-medium transition-all shadow-[0_0_20px_rgba(234,88,12,0.4)]"
+              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white px-6 py-2 rounded-full font-medium transition-all shadow-[0_0_20px_rgba(234,88,12,0.4)] transform-gpu hover:scale-105 active:scale-95"
             >
               Pre-order
             </button>
@@ -108,19 +107,19 @@ const Navbar: React.FC<NavbarProps> = ({ onPreOrderClick, onAuthClick, onDashboa
           <>
             <button
               onClick={onAuthClick}
-              className="hidden md:block bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-full font-medium transition-all"
+              className="hidden md:block bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-full font-medium transition-all transform-gpu"
             >
               Sign In
             </button>
             <button 
               onClick={onPreOrderClick}
-              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white px-6 py-2 rounded-full font-medium transition-all shadow-[0_0_20px_rgba(234,88,12,0.4)]"
+              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white px-6 py-2 rounded-full font-medium transition-all shadow-[0_0_20px_rgba(234,88,12,0.4)] transform-gpu hover:scale-105 active:scale-95"
             >
               Pre-order
             </button>
           </>
         )}
-        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-white">
+        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-white transform-gpu active:scale-90 transition-transform">
           {isMenuOpen ? <X /> : <Menu />}
         </button>
       </div>
@@ -132,7 +131,9 @@ const Navbar: React.FC<NavbarProps> = ({ onPreOrderClick, onAuthClick, onDashboa
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 w-full bg-black/95 backdrop-blur-xl border-b border-white/10 py-6 px-6 flex flex-col gap-4 md:hidden"
+            transition={{ duration: 0.2 }}
+            style={{ willChange: 'opacity, transform' }}
+            className="absolute top-full left-0 w-full bg-black/95 backdrop-blur-xl border-b border-white/10 py-6 px-6 flex flex-col gap-4 md:hidden transform-gpu"
           >
             <a href="#hero" onClick={handleScrollTo('hero')} className="text-white/80 hover:text-white py-2">Home</a>
             <a href="#problem" onClick={handleScrollTo('problem')} className="text-white/80 hover:text-white py-2">The Risk</a>
@@ -152,30 +153,33 @@ const Navbar: React.FC<NavbarProps> = ({ onPreOrderClick, onAuthClick, onDashboa
   );
 };
 
-// Floating particles component
+// Optimized Floating particles using pure GPU transforms
 const FloatingParticles = () => {
-  const particles = Array.from({ length: 30 }, (_, i) => ({
+  // Memoizing particles so they don't recalculate on re-renders
+  const particles = React.useMemo(() => Array.from({ length: 25 }, (_, i) => ({
     id: i,
     size: Math.random() * 4 + 2,
-    left: Math.random() * 100,
+    xStart: Math.random() * 100, // viewport width percentage
     delay: Math.random() * 5,
-    duration: Math.random() * 10 + 10,
-  }));
+    duration: Math.random() * 10 + 15,
+  })), []);
+
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none transform-gpu">
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          className="absolute bg-orange-500/30 rounded-full"
+          className="absolute bg-orange-500/30 rounded-full transform-gpu"
           style={{
             width: p.size,
             height: p.size,
-            left: `${p.left}%`,
-            top: '-10%',
+            left: `${p.xStart}vw`,
+            top: '-5vh',
+            willChange: 'transform'
           }}
           animate={{
-            y: ['0vh', '120vh'],
-            x: [`${Math.random() * 20 - 10}px`, `${Math.random() * 20 - 10}px`],
+            y: ['0vh', '110vh'],
+            x: [0, Math.random() * 50 - 25],
           }}
           transition={{
             duration: p.duration,
@@ -191,7 +195,7 @@ const FloatingParticles = () => {
 
 const HeroSection = ({ onPreOrderClick }: { onPreOrderClick: () => void }) => {
   const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, 300]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   return (
@@ -200,18 +204,22 @@ const HeroSection = ({ onPreOrderClick }: { onPreOrderClick: () => void }) => {
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/grain.svg')] opacity-20" />
       <FloatingParticles />
       
-      <motion.div style={{ y, opacity }} className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-32 md:py-20">
+      <motion.div 
+        style={{ y, opacity, willChange: 'transform, opacity' }} 
+        className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-32 md:py-20 transform-gpu"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            style={{ willChange: 'transform, opacity' }}
           >
-            <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 mb-6">
+            <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 mb-6 transform-gpu">
               <Sparkles className="w-4 h-4 text-orange-500" />
               <span className="text-sm text-orange-300 font-medium">Next-Gen Kitchen Safety</span>
             </div>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.1] mb-6">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.1] mb-6 transform-gpu">
               Smart Protection
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 block">For Every Flame</span>
             </h1>
@@ -222,11 +230,11 @@ const HeroSection = ({ onPreOrderClick }: { onPreOrderClick: () => void }) => {
             <div className="flex flex-col sm:flex-row gap-4">
               <button 
                 onClick={onPreOrderClick}
-                className="group bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-[0_0_30px_rgba(234,88,12,0.5)] flex items-center justify-center gap-2"
+                className="group bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-[0_0_30px_rgba(234,88,12,0.5)] flex items-center justify-center gap-2 transform-gpu hover:scale-105 active:scale-95"
               >
                 Pre-order Now <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
-              <a href="#features" className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all text-center backdrop-blur-sm">
+              <a href="#features" className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all text-center backdrop-blur-sm transform-gpu">
                 Explore Features
               </a>
             </div>
@@ -247,24 +255,27 @@ const HeroSection = ({ onPreOrderClick }: { onPreOrderClick: () => void }) => {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, rotateY: 30 }}
+            initial={{ opacity: 0, scale: 0.9, rotateY: 15 }}
             animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-            transition={{ duration: 1, delay: 0.4, type: "spring" }}
-            className="relative"
+            transition={{ duration: 0.8, delay: 0.2, type: "spring", bounce: 0.4 }}
+            style={{ willChange: 'transform, opacity' }}
+            className="relative transform-gpu perspective-1000"
           >
-            <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl shadow-orange-500/20">
-              <img src={IMG_HERO_DEVICE} alt="Ignis Secura Smart Device" className="w-full h-auto object-cover" />
+            <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl shadow-orange-500/20 transform-gpu">
+              <img src={IMG_HERO_DEVICE} alt="Ignis Secura Smart Device" fetchPriority="high" decoding="async" className="w-full h-auto object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               <motion.div 
-                animate={{ scale: [1, 1.05, 1], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute -inset-1 bg-gradient-to-r from-orange-500/20 to-red-500/20 blur-2xl rounded-3xl -z-10"
+                animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.8, 0.4] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                style={{ willChange: 'transform, opacity' }}
+                className="absolute -inset-1 bg-gradient-to-r from-orange-500/20 to-red-500/20 blur-2xl rounded-3xl -z-10 transform-gpu"
               />
             </div>
             <motion.div 
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 4, repeat: Infinity }}
-              className="absolute -bottom-6 -left-6 bg-black/80 backdrop-blur-xl rounded-2xl p-4 border border-white/10 shadow-lg"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              style={{ willChange: 'transform' }}
+              className="absolute -bottom-6 -left-6 bg-black/80 backdrop-blur-xl rounded-2xl p-4 border border-white/10 shadow-lg transform-gpu"
             >
               <div className="flex items-center gap-3">
                 <div className="bg-green-500/20 p-2 rounded-full">
@@ -285,24 +296,26 @@ const HeroSection = ({ onPreOrderClick }: { onPreOrderClick: () => void }) => {
 
 const ProblemSection = () => {
   return (
-    <section id="problem" className="relative py-28 md:py-40 bg-black overflow-hidden">
+    <section id="problem" className="relative py-28 md:py-40 bg-black overflow-hidden transform-gpu">
       <motion.div 
-        className="absolute inset-0"
+        className="absolute inset-0 transform-gpu"
         initial={{ scale: 1 }}
         whileInView={{ scale: 1.05 }}
-        transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
+        transition={{ duration: 15, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
+        style={{ willChange: 'transform' }}
       >
-        <img src={IMG_STOVE} alt="Gas hazard" className="w-full h-full object-cover opacity-30" />
+        <img src={IMG_STOVE} alt="Gas hazard" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-30" />
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/90 to-transparent" />
       </motion.div>
       
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-          className="max-w-2xl"
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          style={{ willChange: 'transform, opacity' }}
+          className="max-w-2xl transform-gpu"
         >
           <div className="flex items-center gap-3 text-red-500 mb-6 bg-red-500/10 w-fit px-5 py-2.5 rounded-full border border-red-500/20">
             <AlertTriangle className="w-5 h-5" />
@@ -315,7 +328,7 @@ const ProblemSection = () => {
             LPG leaks are invisible, odorless in early stages, and can escalate within minutes. 
             Traditional regulators offer no protection against leaks, leaving your family vulnerable.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 text-white bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm">
+          <div className="flex flex-col sm:flex-row gap-6 text-white bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm transform-gpu">
             <div className="flex items-center gap-3">
               <Wind className="w-6 h-6 text-red-400" />
               <span className="font-medium">Undetectable vapors</span>
@@ -346,15 +359,18 @@ const FeatureSection = () => {
   ];
 
   return (
-    <section id="features" className="relative py-28 bg-gradient-to-b from-black to-zinc-950 overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-orange-600/10 blur-[150px] rounded-full" />
+    <section id="features" className="relative py-28 bg-gradient-to-b from-black to-zinc-950 overflow-hidden transform-gpu">
+      {/* Optimized Background Blur by reducing blur size and using fixed translate */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-orange-600/10 blur-[100px] rounded-full transform-gpu pointer-events-none" />
       
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5 }}
+          style={{ willChange: 'transform, opacity' }}
+          className="text-center mb-16 transform-gpu"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Intelligent Safety, <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">Uncompromising Protection</span></h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
@@ -366,14 +382,15 @@ const FeatureSection = () => {
           {features.map((feature, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, y: 50 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ delay: idx * 0.1, duration: 0.6 }}
-              className="group relative bg-white/[0.03] border border-white/5 rounded-2xl p-8 hover:bg-white/[0.06] transition-all hover:border-orange-500/30"
+              viewport={{ once: true, margin: "0px" }}
+              transition={{ delay: idx * 0.05, duration: 0.4 }}
+              style={{ willChange: 'transform, opacity' }}
+              className="group relative bg-white/[0.03] border border-white/5 rounded-2xl p-8 hover:bg-white/[0.06] transition-colors hover:border-orange-500/30 transform-gpu"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/0 group-hover:from-orange-500/5 group-hover:to-red-500/5 rounded-2xl transition-all" />
-              <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/0 group-hover:from-orange-500/5 group-hover:to-red-500/5 rounded-2xl transition-colors" />
+              <div className="relative z-10">
                 <div className="bg-gradient-to-br from-orange-500/20 to-red-500/20 p-3 rounded-xl w-fit mb-5">
                   <feature.icon className="w-8 h-8 text-orange-500" />
                 </div>
@@ -397,13 +414,15 @@ const HowItWorksSection = () => {
   ];
 
   return (
-    <section id="how-it-works" className="relative py-28 bg-black overflow-hidden">
+    <section id="how-it-works" className="relative py-28 bg-black overflow-hidden transform-gpu">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5 }}
+          style={{ willChange: 'transform, opacity' }}
+          className="text-center mb-16 transform-gpu"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">How It <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">Works</span></h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
@@ -415,15 +434,16 @@ const HowItWorksSection = () => {
           {steps.map((step, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.15 }}
-              className="text-center"
+              viewport={{ once: true, margin: "0px" }}
+              transition={{ delay: idx * 0.1, duration: 0.4 }}
+              style={{ willChange: 'transform, opacity' }}
+              className="text-center transform-gpu"
             >
               <div className="relative w-24 h-24 mx-auto mb-6">
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-full blur-xl" />
-                <div className="relative bg-gradient-to-br from-orange-600 to-red-600 rounded-full w-full h-full flex items-center justify-center text-white text-2xl font-bold">
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-full blur-lg" />
+                <div className="relative bg-gradient-to-br from-orange-600 to-red-600 rounded-full w-full h-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                   {idx + 1}
                 </div>
               </div>
@@ -445,13 +465,15 @@ const TestimonialsSection = () => {
   ];
 
   return (
-    <section id="testimonials" className="relative py-28 bg-zinc-950 overflow-hidden">
+    <section id="testimonials" className="relative py-28 bg-zinc-950 overflow-hidden transform-gpu">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5 }}
+          style={{ willChange: 'transform, opacity' }}
+          className="text-center mb-16 transform-gpu"
         >
           <div className="inline-flex items-center gap-2 bg-orange-500/10 rounded-full px-4 py-2 mb-4">
             <Star className="w-4 h-4 text-orange-500 fill-orange-500" />
@@ -464,14 +486,15 @@ const TestimonialsSection = () => {
           {testimonials.map((t, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className="bg-white/[0.03] border border-white/5 rounded-2xl p-6"
+              viewport={{ once: true, margin: "0px" }}
+              transition={{ delay: idx * 0.1, duration: 0.4 }}
+              style={{ willChange: 'transform, opacity' }}
+              className="bg-white/[0.03] border border-white/5 rounded-2xl p-6 transform-gpu"
             >
               <div className="flex items-center gap-4 mb-4">
-                <img src={t.image} alt={t.name} className="w-12 h-12 rounded-full object-cover" />
+                <img src={t.image} alt={t.name} loading="lazy" decoding="async" className="w-12 h-12 rounded-full object-cover" />
                 <div>
                   <h4 className="text-white font-semibold">{t.name}</h4>
                   <p className="text-gray-400 text-sm">{t.role}</p>
@@ -493,18 +516,20 @@ const TestimonialsSection = () => {
 
 const SafetySection = () => {
   return (
-    <section id="safety" className="relative min-h-[80vh] flex items-center overflow-hidden">
+    <section id="safety" className="relative min-h-[80vh] flex items-center overflow-hidden transform-gpu">
       <div className="absolute inset-0">
-        <img src={IMG_SAFE_KITCHEN} alt="Safe modern kitchen" className="w-full h-full object-cover" />
+        <img src={IMG_SAFE_KITCHEN} alt="Safe modern kitchen" loading="lazy" decoding="async" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-stone-50/95 via-stone-50/70 to-transparent" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-20">
         <motion.div
-          initial={{ opacity: 0, x: -50 }}
+          initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="max-w-xl"
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6 }}
+          style={{ willChange: 'transform, opacity' }}
+          className="max-w-xl transform-gpu"
         >
           <div className="flex items-center gap-3 text-emerald-700 mb-8 bg-emerald-100/90 backdrop-blur-md w-fit px-5 py-2.5 rounded-full border border-emerald-200 shadow-sm">
             <CheckCircle2 className="w-5 h-5" />
@@ -519,7 +544,7 @@ const SafetySection = () => {
             ensuring your kitchen remains the heart of your home—safe, warm, and secure.
           </p>
           
-          <div className="bg-white/80 backdrop-blur-xl border border-white p-6 rounded-3xl shadow-xl flex items-center gap-6 max-w-md">
+          <div className="bg-white/80 backdrop-blur-md border border-white p-6 rounded-3xl shadow-xl flex items-center gap-6 max-w-md transform-gpu hover:scale-[1.02] transition-transform">
             <div className="bg-emerald-100 p-4 rounded-full text-emerald-600 shrink-0">
               <ShieldCheck className="w-8 h-8" />
             </div>
@@ -536,13 +561,16 @@ const SafetySection = () => {
 
 const CTASection = ({ onPreOrderClick }: { onPreOrderClick: () => void }) => {
   return (
-    <section className="relative py-28 bg-gradient-to-r from-orange-600 to-red-600 overflow-hidden">
+    <section className="relative py-28 bg-gradient-to-r from-orange-600 to-red-600 overflow-hidden transform-gpu">
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/grain.svg')] opacity-10" />
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5 }}
+          style={{ willChange: 'transform, opacity' }}
+          className="transform-gpu"
         >
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">Ready to Protect Your Home?</h2>
           <p className="text-xl text-orange-100 mb-10 max-w-2xl mx-auto">
@@ -550,7 +578,7 @@ const CTASection = ({ onPreOrderClick }: { onPreOrderClick: () => void }) => {
           </p>
           <button 
             onClick={onPreOrderClick}
-            className="bg-white text-orange-600 hover:bg-gray-100 px-10 py-4 rounded-full font-bold text-lg transition-all shadow-xl hover:scale-105"
+            className="bg-white text-orange-600 hover:bg-gray-100 px-10 py-4 rounded-full font-bold text-lg transition-transform shadow-xl hover:scale-105 active:scale-95 transform-gpu"
           >
             Claim Your Pre-order Now
           </button>
@@ -568,7 +596,7 @@ const FooterSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <img src={logoImage} alt="Ignis Secura" className="h-10 object-contain" />
+              <img src={logoImage} alt="Ignis Secura" loading="lazy" decoding="async" className="h-10 object-contain" />
               <span className="font-bold text-xl bg-gradient-to-r from-white to-orange-300 bg-clip-text text-transparent">Ignis Secura</span>
             </div>
             <p className="text-gray-400 max-w-md">
@@ -578,26 +606,26 @@ const FooterSection = () => {
           <div>
             <h4 className="text-white font-semibold mb-4">Product</h4>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="#features" className="hover:text-white transition">Features</a></li>
-              <li><a href="#how-it-works" className="hover:text-white transition">How it works</a></li>
-              <li><a href="#safety" className="hover:text-white transition">Safety</a></li>
+              <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+              <li><a href="#how-it-works" className="hover:text-white transition-colors">How it works</a></li>
+              <li><a href="#safety" className="hover:text-white transition-colors">Safety</a></li>
             </ul>
           </div>
           <div>
             <h4 className="text-white font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="#" className="hover:text-white transition">About</a></li>
-              <li><a href="#" className="hover:text-white transition">Contact</a></li>
-              <li><a href="#" className="hover:text-white transition">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500 text-sm">
           <p>&copy; 2026 Ignis Secura. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-white transition">Terms</a>
-            <a href="#" className="hover:text-white transition">Privacy</a>
-            <a href="#" className="hover:text-white transition">Cookie Policy</a>
+            <a href="#" className="hover:text-white transition-colors">Terms</a>
+            <a href="#" className="hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
           </div>
         </div>
       </div>
@@ -612,15 +640,20 @@ function AppContent() {
   const [showAdmin, setShowAdmin] = useState(false);
   const { isAuthenticated } = useAuth();
 
-  // Secret admin access
   useEffect(() => {
+    // Add native smooth scrolling to document
+    document.documentElement.style.scrollBehavior = 'smooth';
+    
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.key === 'A') {
         setShowAdmin(true);
       }
     };
     window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      document.documentElement.style.scrollBehavior = 'auto';
+    };
   }, []);
 
   const handlePreOrder = () => setShowPreOrder(true);
@@ -643,7 +676,7 @@ function AppContent() {
         <FooterSection />
       </div>
       
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {showPreOrder && <PreOrderPage onClose={() => setShowPreOrder(false)} onAuthClick={() => setShowAuth(true)} />}
         {showAuth && <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />}
         {showDashboard && isAuthenticated && <UserDashboard onClose={() => setShowDashboard(false)} />}
